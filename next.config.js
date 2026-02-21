@@ -12,13 +12,13 @@ module.exports = {
       'THIS IS USED TO SIGN AND VERIFY JWT TOKENS, REPLACE IT WITH YOUR OWN SECRET, IT CAN BE ANY STRING',
   },
   env: {
-    baseApiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+    baseApiUrl: 'https://api.tradestrek.com' || 'http://localhost:5000',
   },
   publicRuntimeConfig: {
-    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+    apiUrl: 'https://api.tradestrek.com' || 'http://localhost:5000',
   },
   images: {
     loader: 'imgix',
-    path: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    path: 'https://trades-trek-admin-prod.vercel.app' || 'http://localhost:3000',
   },
 };
