@@ -79,7 +79,12 @@ const Learn = ({ learningModules, toggleEditForm }) => {
     }
   }, [selectItem]);
 
-  const reorderModules = async (groupId, sourceIndex, destinationIndex) => {
+  const reorderModules = async (
+    groupId,
+    sourceIndex,
+    destinationIndex,
+    previousItems
+  ) => {
     try {
       const response = await learningService.reorderLearningModules({
         group: groupId,
@@ -87,20 +92,23 @@ const Learn = ({ learningModules, toggleEditForm }) => {
         destinationIndex
       });
       if (response.success) {
-        setItems(prevItems => {
-          const newItems = [...prevItems];
-          const groupIndex = newItems.findIndex(item => item.group._id === groupId);
-          if (groupIndex !== -1) {
-            newItems[groupIndex].modules = response.data;
-          }
-          return newItems;
-        });
+        // Reconcile with the server's authoritative, order-sorted list
+        // (without mutating the previous state objects).
+        setItems((prevItems) =>
+          prevItems.map((item) =>
+            item.group._id === groupId
+              ? { ...item, modules: response.data }
+              : item
+          )
+        );
         toast.success("Modules reordered successfully");
       } else {
+        setItems(previousItems); // roll back the optimistic move
         toast.error("Failed to reorder modules");
       }
       setIsReordering(false);
     } catch (error) {
+      setItems(previousItems); // roll back the optimistic move
       setIsReordering(false);
       toast.error("An error occurred while reordering modules");
     }
@@ -110,16 +118,31 @@ const Learn = ({ learningModules, toggleEditForm }) => {
     if (!result.destination) return;
 
     const { source, destination } = result;
-    
-    if (source.droppableId === destination.droppableId) {
-      setIsReordering(true);
-      // Reordering within the same group
-      const groupId = source.droppableId;
-      reorderModules(groupId, source.index, destination.index);
-    } else {
+
+    if (source.droppableId !== destination.droppableId) {
       // Moving between groups is not implemented in this version
-      toast.warning("Moving modules between groups is not supported currently");
+      toast.warn("Moving modules between groups is not supported currently");
+      return;
     }
+    if (source.index === destination.index) return;
+
+    const groupId = source.droppableId;
+    const previousItems = items; // snapshot for rollback on failure
+
+    // Optimistically reorder the affected group's modules so the card stays
+    // where it was dropped instead of snapping back during the request.
+    setItems((prevItems) =>
+      prevItems.map((item) => {
+        if (item.group._id !== groupId) return item;
+        const modules = [...item.modules];
+        const [moved] = modules.splice(source.index, 1);
+        modules.splice(destination.index, 0, moved);
+        return { ...item, modules };
+      })
+    );
+
+    setIsReordering(true);
+    reorderModules(groupId, source.index, destination.index, previousItems);
   };
 
   const handleView = (item) => {
