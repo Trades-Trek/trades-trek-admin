@@ -6,7 +6,6 @@ import DashboardHeader from "../../components/header/DashboardHeader";
 import AddHoliday from "../../components/quiz/AddLearning";
 import EditHoliday from "../../components/quiz/EditLearning";
 import SideBar from "../../components/side-bar/SideBar";
-import { userService } from "../../services";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import FormSpinner from "../../components/Spinners/FormSpinner";
@@ -416,36 +415,6 @@ export default function LearningQuiz() {
     setEditUserForm(false);
     setEditFormData({});
     getLearningModules();
-  };
-
-  const confirmDelete = (userId) => {
-    confirmAlert({
-      title: "Confirm to submit",
-      message: "Are you sure to do this.",
-      buttons: [
-        {
-          label: "Yes",
-          onClick: () => deleteUser(userId),
-        },
-        {
-          label: "No",
-        },
-      ],
-    });
-  };
-  const deleteUser = async (userId) => {
-    let response = await userService.deleteHoliday(userId);
-    if (response.success) {
-      // if (!toast.isActive(toastId.current)) {
-      //   toastId.current = toast.success(response.message, {
-      //     position: toast.POSITION.TOP_RIGHT,
-      //   });
-      // }
-    } else {
-      toast.error(response.message, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-    }
   };
 
   const toggleEditForm = (editFormData) => {
