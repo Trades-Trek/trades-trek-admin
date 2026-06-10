@@ -62,7 +62,10 @@ export default function QuizModuleCreator({ addUserCloseModal }) {
   const fetchLearningModuleGroups = async () => {
     try {
       const response = await learningService.getLearningModuleGroups();
-      setLearningModuleGroups(response);
+      // API returns an envelope: { data: [ ...groups... ] }. fetchWrapper already
+      // unwraps the HTTP body, so the array lives at response.data. Storing the
+      // raw envelope made learningModuleGroups an object and crashed .map().
+      setLearningModuleGroups(response?.data ?? []);
     } catch (error) {}
   };
 
@@ -257,7 +260,10 @@ export default function QuizModuleCreator({ addUserCloseModal }) {
           label="Attach to learning group"
           value={group}
           onChange={setGroup}
-          data={learningModuleGroups.map((e) => ({
+          data={(Array.isArray(learningModuleGroups)
+            ? learningModuleGroups
+            : learningModuleGroups?.data ?? []
+          ).map((e) => ({
             value: e._id,
             label: e.name,
           }))}
