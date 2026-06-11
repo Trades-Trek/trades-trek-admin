@@ -40,7 +40,7 @@ export default function GroupManagement() {
     setIsLoading(true);
     try {
       const response = await learningService.getLearningModuleGroups();
-      setGroups(response.data);
+      setGroups(response?.data ?? []);
     } catch (error) {
       toast.error("Failed to fetch groups", {
         position: toast.POSITION.TOP_RIGHT,
@@ -118,11 +118,17 @@ export default function GroupManagement() {
 
   const onDragEnd = async (result) => {
     if (!result.destination) return;
+    if (result.source.index === result.destination.index) return;
 
-    setIsReordering(true);
+    const previousGroups = groups; // snapshot for rollback on failure
     const newGroups = Array.from(groups);
     const [reorderedItem] = newGroups.splice(result.source.index, 1);
     newGroups.splice(result.destination.index, 0, reorderedItem);
+
+    // Optimistically show the new order so the card stays where it was dropped
+    // instead of snapping back during the request.
+    setGroups(newGroups);
+    setIsReordering(true);
 
     try {
      const response = await learningService.reorderLearningModuleGroups({
@@ -131,17 +137,24 @@ export default function GroupManagement() {
       });
 
       if(response.success){
+        // Reconcile with the server's authoritative, order-sorted list.
         setGroups(response.data)
-    
+
         toast.success(response.message, {
           position: toast.POSITION.TOP_RIGHT,
         } );
+      } else {
+        setGroups(previousGroups); // roll back the optimistic move
+        toast.error(response.message || "Failed to reorder groups", {
+          position: toast.POSITION.TOP_RIGHT,
+        });
       }
-      
+
     } catch (error) {
+      setGroups(previousGroups); // roll back the optimistic move
       toast.error("Failed to reorder groups", {
         position: toast.POSITION.TOP_RIGHT,
-      }); // Refetch to ensure frontend is in sync with backend
+      });
     } finally {
       setIsReordering(false);
     }
@@ -292,7 +305,6 @@ export default function GroupManagement() {
                                      <p className="text-sm text-gray-600">Order: {group.order}</p>
                                   </div>
                                   <Button
-                                    disabled
                                     style={{ background: "red" }}
                                     onClick={() => confirmDelete(group)}
                                     className="btn btnBgRed"
