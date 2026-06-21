@@ -338,14 +338,19 @@ export default function GroupManagement() {
           Are you sure you want to delete the group "{groupToDelete?.name}"?
           This will also delete all associated learning modules.
         </p>
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex justify-end" style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "16px" }}>
           <Button
             onClick={() => setDeleteModalOpen(false)}
             className="btn btnBgGray mr-2"
+            style={{ background: "#6c757d", color: "white" }}
           >
             Cancel
           </Button>
-          <Button onClick={deleteGroup} className="btn btnBgRed">
+          <Button
+            onClick={deleteGroup}
+            className="btn btnBgRed"
+            style={{ background: "red", color: "white" }}
+          >
             Delete
           </Button>
         </div>
