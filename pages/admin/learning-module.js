@@ -252,6 +252,28 @@ const Learn = ({ learningModules, toggleEditForm }) => {
       )}
 
       <Modal opened={opened} fullScreen onClose={close} title={selectItem.name}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: "16px",
+          }}
+        >
+          <button
+            onClick={close}
+            style={{
+              padding: "8px 16px",
+              background: "#F44336",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            ✕ Close
+          </button>
+        </div>
         <h1 style={{ fontWeight: 900 }}>Reading Section</h1>
         <br />
         {typeof window !== "undefined" && (
